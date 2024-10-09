@@ -181,6 +181,7 @@ def start_consumer():
 
                 task_name = decoded_message['event_name'] if isinstance(decoded_message, dict) else decoded_message
                 if task_name:
+                    # Transporter registration
                     if task_name == "transporterRegistration_Representative Details":
                         logging.info(f"Received data for committing: {task_name}")
                         
@@ -295,6 +296,73 @@ def start_consumer():
                             conn.commit()
                             logging.info("transporterRegistration_Security inserted")
 
+                    # shipper registration
+                    if task_name == "shipperRegistration_Representative Details":
+
+                        user_id = decoded_message.get("user_id", "")
+                        first_name = decoded_message.get("first_name", "")
+                        last_name = decoded_message.get("last_name", "")
+                        phone_number = decoded_message.get("phone_number", "")
+                        id_number = decoded_message.get("id_number", "")
+                        company_name = decoded_message.get("company_name", "")
+                        company_location = decoded_message.get("company_location", "")
+                        company_email = decoded_message.get("company_email", "")
+
+                        conn = create_connection()
+                        with conn.cursor() as cur:
+                            insert_query = """
+                                INSERT INTO shipper (user_id, first_name, last_name, phone_number, id_number, company_name, company_location, company_email)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                                ON CONFLICT (user_id) DO NOTHING
+                            """
+
+                            # Execute the insert with all values
+                            cur.execute(insert_query, (user_id, first_name, last_name, phone_number, id_number, company_name, company_location, company_email))
+                            conn.commit()
+                            logging.info("tshipperRegistration_Details inserted")
+
+                    if task_name == "shipperRegistration_Company Details":
+                        user_id = decoded_message.get("user_id", "")
+                        company_contact = decoded_message.get("company_contact", "")
+                        bank_name = decoded_message.get("bank_name", "")
+                        account_name = decoded_message.get("account_name", "")
+                        account_number = decoded_message.get("account_number", "")
+                        directorship = decoded_message.get("company_email", "")
+                        proof_of_current_address = decoded_message.get("company_email", "")
+
+                        conn = create_connection()
+                        with conn.cursor() as cur:
+                            insert_query = """
+                                INSERT INTO shipper_company_details (user_id, company_contact, bank_name, account_name, account_number, directorship, proof_of_current_address)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                                ON CONFLICT (user_id) DO NOTHING
+                            """
+
+                            # Execute the insert with all values
+                            cur.execute(insert_query, (user_id, company_contact, bank_name, account_name, account_number, directorship, proof_of_current_address))
+                            conn.commit()
+                            logging.info("tshipperCompany Details inserted")
+
+                    if task_name == "shipperRegistration_Company Documentation":   
+                        user_id = decoded_message.get("user_id", "")
+                        tax_expiry = decoded_message.get("tax_expiry", "")
+                        certificate_of_incorporation = decoded_message.get("certificate_of_incorporation", "")
+                        tax_clearance = decoded_message.get("tax_clearance", "")
+
+                        conn = create_connection()
+                        with conn.cursor() as cur:
+                            insert_query = """
+                                INSERT INTO shipper_documentation (user_id, tax_expiry, certificate_of_incorporation, tax_clearance)
+                                VALUES (%s, %s, %s, %s)
+                                ON CONFLICT (user_id) DO NOTHING
+                            """
+
+                            # Execute the insert with all values
+                            cur.execute(insert_query, (user_id, tax_expiry, certificate_of_incorporation, tax_clearance))
+                            conn.commit()
+                            logging.info("tshipperCompany Documentation inserted")
+
+            
                 else:
                     logging.warning("No valid task name received.")
         except KeyboardInterrupt:

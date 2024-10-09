@@ -52,6 +52,35 @@ CREATE TABLE IF NOT EXISTS transporter_profile (
     FOREIGN KEY (user_id) REFERENCES transporter(user_id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS shipper (
+    user_id TEXT PRIMARY KEY,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    phone_number TEXT NOT NULL,
+    id_number TEXT NOT NULL,
+    company_name TEXT NOT NULL,
+    company_location TEXT NOT NULL,
+    company_email TEXT NOT NULL,
+    registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+);
 
+CREATE TABLE shipper_company_details (
+    user_id TEXT PRIMARY KEY,
+    company_contact TEXT NOT NULL,
+    bank_name TEXT NOT NULL,
+    account_name TEXT NOT NULL,
+    account_number TEXT NOT NULL,
+    directorship TEXT NOT NULL,
+    proof_of_current_address TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES shipper(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE shipper_documentation (
+    user_id TEXT PRIMARY KEY,
+    tax_expiry DATE NOT NULL,
+    certificate_of_incorporation TEXT NOT NULL,
+    tax_clearance TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES shipper(user_id) ON DELETE CASCADE
+);
 
 
