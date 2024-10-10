@@ -6,8 +6,9 @@ CREATE TABLE IF NOT EXISTS transporter (
     first_name TEXT NOT NULL,
     id_number TEXT UNIQUE NOT NULL,
     last_name TEXT NOT NULL,
-    phone_number TEXT UNIQUE NOT NULL,
-    registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+    phone_number TEXT UNIQUE NOT NULL,  
+    registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    registration_status TEXT DEFAULT 'pending'
 );
 
 CREATE TABLE IF NOT EXISTS transporter_account_information (
