@@ -244,7 +244,6 @@ def start_consumer():
                     if task_name == "shipperRegistration_Security":   
                         user_id = decoded_message.get("user_id", "")
                         password = decoded_message.get("password", "")
-                        confirm_password = decoded_message.get("confirm_password", "")
                         profile_picture = decoded_message.get("profile_picture", "")
 
                         conn = create_connection()
