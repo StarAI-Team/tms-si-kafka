@@ -159,21 +159,19 @@ def start_consumer():
 
                     if task_name == "transporterRegistration_Security":
                         user_id = decoded_message.get("user_id", "")
-                        user_name = decoded_message.get("user_name", "")
                         profile_picture = decoded_message.get("profile_picture", "")
                         password = decoded_message.get("password", "")
-                        confirm_password = decoded_message.get("confirm_password", "")
-
+                
                         conn = create_connection()
                         with conn.cursor() as cur:
                             insert_query = """
-                                INSERT INTO transporter_profile (user_id, user_name, profile_picture, password, confirm_password)
-                                VALUES (%s, %s, %s, %s, %s)
+                                INSERT INTO transporter_profile (user_id, profile_picture, password)
+                                VALUES (%s, %s, %s)
                                 ON CONFLICT (user_id) DO NOTHING
                             """
 
                             # Execute the insert with all values
-                            cur.execute(insert_query, (user_id, user_name, profile_picture, password, confirm_password))
+                            cur.execute(insert_query, (user_id, profile_picture, password))
                             conn.commit()
                             logging.info("transporterRegistration_Security inserted")
 
@@ -241,7 +239,26 @@ def start_consumer():
                             # Execute the insert with all values
                             cur.execute(insert_query, (user_id, tax_expiry, certificate_of_incorporation, tax_clearance))
                             conn.commit()
-                            logging.info("tshipperCompany Documentation inserted")
+                            logging.info("shipperCompany Documentation inserted")
+
+                    if task_name == "shipperRegistration_Security":   
+                        user_id = decoded_message.get("user_id", "")
+                        password = decoded_message.get("password", "")
+                        confirm_password = decoded_message.get("confirm_password", "")
+                        profile_picture = decoded_message.get("profile_picture", "")
+
+                        conn = create_connection()
+                        with conn.cursor() as cur:
+                            insert_query = """
+                                INSERT INTO shipper_profile (user_id, password, profile_picture)
+                                VALUES (%s, %s, %s)
+                                ON CONFLICT (user_id) DO NOTHING
+                            """
+
+                            # Execute the insert with all values
+                            cur.execute(insert_query, (user_id, password, profile_picture))
+                            conn.commit()
+                            logging.info("shipper security details inserted")
 
             
                 else:

@@ -46,10 +46,8 @@ CREATE TABLE IF NOT EXISTS transporter_fleet (
 
 CREATE TABLE IF NOT EXISTS transporter_profile (
     user_id TEXT PRIMARY KEY,
-    user_name TEXT NOT NULL,
     profile_picture TEXT NOT NULL,
     password TEXT NOT NULL,
-    confirm_password TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES transporter(user_id) ON DELETE CASCADE
 );
 
@@ -62,10 +60,11 @@ CREATE TABLE IF NOT EXISTS shipper (
     company_name TEXT NOT NULL,
     company_location TEXT NOT NULL,
     company_email TEXT NOT NULL,
-    registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+    registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    registration_status TEXT DEFAULT 'pending'
 );
 
-CREATE TABLE shipper_company_details (
+CREATE TABLE IF NOT EXISTS shipper_company_details (
     user_id TEXT PRIMARY KEY,
     company_contact TEXT NOT NULL,
     bank_name TEXT NOT NULL,
@@ -76,7 +75,7 @@ CREATE TABLE shipper_company_details (
     FOREIGN KEY (user_id) REFERENCES shipper(user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE shipper_documentation (
+CREATE TABLE IF NOT EXISTS shipper_documentation (
     user_id TEXT PRIMARY KEY,
     tax_expiry DATE NOT NULL,
     certificate_of_incorporation TEXT NOT NULL,
@@ -84,4 +83,9 @@ CREATE TABLE shipper_documentation (
     FOREIGN KEY (user_id) REFERENCES shipper(user_id) ON DELETE CASCADE
 );
 
-
+CREATE TABLE IF NOT EXISTS shipper_profile (
+    user_id TEXT PRIMARY KEY,
+    profile_picture TEXT NOT NULL,
+    password TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES shipper(user_id) ON DELETE CASCADE
+);
