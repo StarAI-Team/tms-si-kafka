@@ -198,7 +198,7 @@ def start_consumer():
                             # Execute the insert with all values
                             cur.execute(insert_query, (user_id, first_name, last_name, phone_number, id_number, company_name, company_location, company_email))
                             conn.commit()
-                            logging.info("tshipperRegistration_Details inserted")
+                            logging.info("shipperRegistration_Details inserted")
 
                     if task_name == "shipperRegistration_Company Details":
                         user_id = decoded_message.get("user_id", "")

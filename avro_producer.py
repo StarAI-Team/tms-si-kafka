@@ -294,8 +294,8 @@ def process_user():
 
                 send_email(sender_email, receiver_email, subject, body, password, smtp_server, smtp_port)
                 logging.info("Registration notification successfull")
-                
-                return jsonify({"status": "notification successfull", "user_id": user_id}), 200
+
+                # return jsonify({"status": "notification successfull", "user_id": user_id}), 200
         except Exception as e:
             logging.info(f"Failed to publish message to kafka!")
 
