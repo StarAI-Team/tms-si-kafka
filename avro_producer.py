@@ -16,23 +16,28 @@ from admin import Admin
 from producer import ProducerClass
 from schema_registry_client import SchemaClient
 from confluent_kafka import KafkaException
-
+from notifications import send_email
 app = Flask(__name__)
 
-# # Initialize PostgreSQL connection
-# def create_connection():
-#     # try:
-#     conn = psycopg2.connect(
-#         dbname=os.environ.get('POSTGRES_DB'),
-#         user=os.environ.get('POSTGRES_USER'),
-#         password=os.environ.get('POSTGRES_PASSWORD'),
-#         host='db',
-#         port='5432'
-#     )
-#     return conn
-# # except OperationalError as e:
-#         # logging.error(f"Could not connect to the database: {e}")
-#         # return None
+# Initialize PostgreSQL connection
+def create_connection():
+    # try:
+    conn = psycopg2.connect(
+        dbname=os.environ.get('POSTGRES_DB'),
+        user=os.environ.get('POSTGRES_USER'),
+        password=os.environ.get('POSTGRES_PASSWORD'),
+        host='db',
+        port='5432'
+    )
+    return conn
+
+
+
+
+
+# except OperationalError as e:
+        # logging.error(f"Could not connect to the database: {e}")
+        # return None
 
 # def init_database():
 #     conn = create_connection()
@@ -197,8 +202,100 @@ def process_user():
         logging.info(f"user data: {user_data}")
 
         # Produce message to Kafka
+        try:
         
-        producer.send_message(key=user_id, value=user_data)
+            producer.send_message(key=user_id, value=user_data)
+
+            task_name = user_data['event_name'] if isinstance(user_data, dict) else user_data
+            if task_name == "shipperRegistration_Security" or task_name == "transporterRegistration_Security":
+                def execute_select_query(user_id, event):
+                    try:
+                        if event == "shipperRegistration_Security":
+                            table_name = "shipper"
+                        elif event == "transporterRegistration_Security":
+                            table_name = "transporter"
+                        conn = create_connection()
+                        
+                        with conn.cursor() as cur:
+                            query = f"""
+                                SELECT 
+                                    company_email, 
+                                    company_name, 
+                                    first_name, 
+                                    last_name
+                                FROM 
+                                    {table_name}
+                                WHERE 
+                                    user_id = %s
+                            """
+                            
+                            # Execute the select query
+                            cur.execute(query, (user_id,))
+                            
+                            # Fetch the result
+                            result = cur.fetchone()
+                            
+                            if result:
+                                logging.info(f"Found record for user_id: {user_id}")
+                                return {
+                                    'company_email': result[0],
+                                    'company_name': result[1],
+                                    'first_name': result[2],
+                                    'last_name': result[3]
+                                }
+                            else:
+                                logging.warning(f"No record found for user_id: {user_id}")
+                                return None
+                        
+                    except Exception as e:
+                        logging.error(f"Error executing query: {str(e)}")
+                        raise
+                    
+                    finally:
+                        if conn:
+                            conn.close()
+
+                # get client company details for notification
+                try:
+                    user_id = user_id
+                    result = execute_select_query(user_id, task_name)
+                    
+                    if result:
+                        logging.info(result)
+                    else:
+                        logging.info("No data available.")
+                except Exception as e:
+                    logging.info(f"An error occurred: {str(e)}")
+
+                # use user_id to get details for company notifications
+                user_info = f"{result["first_name"]} {result["last_name"]}"
+                receiver_email = result["company_email"]
+                subject = 'Registration Confirmation - Next Steps'
+                body = f'''
+                Dear {user_info},
+
+                Thank you for registering with our system. We have received your registration information and it has been sent for processing and verification.
+
+                Key Points: • Your registration details have been successfully submitted. • Our team will review and verify your information. • Once verified, you will receive an email with further instructions on how to proceed.
+
+                Please note that it may take up to [X] business days for our team to complete this process. We appreciate your patience during this time.
+
+                If you have any questions or concerns, please don't hesitate to contact us at starinternational.
+
+                We look forward to welcoming you to our system once your account has been verified.
+
+
+                Best regards, StarInternational team
+                '''
+                sender_email =  os.environ.get("SENDER_EMAIL")
+                password = os.environ.get("SENDER_PASSWORD")  # sender email account password
+                smtp_server= os.environ.get("SMTP_SERVER")  # SMTP server of the email provider
+                smtp_port = os.environ.get("SMTP_PORT")
+
+                send_email(sender_email, receiver_email, subject, body, password, smtp_server, smtp_port)
+                return jsonify({"status": "notification successfull", "user_id": user_id}), 200
+        except Exception as e:
+            logging.info(f"Failed to publish message to kafka!")
 
         return jsonify({"status": "success", "user_id": user_id}), 200
 
