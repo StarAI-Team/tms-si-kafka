@@ -271,22 +271,14 @@ def process_user():
                 user_info = f"{result["first_name"]} {result["last_name"]}"
                 receiver_email = result["company_email"]
                 subject = 'Registration Confirmation - Next Steps'
-                body = f'''
-                Dear {user_info},
-
-                Thank you for registering with our system. We have received your registration information and it has been sent for processing and verification.
-
-                Key Points: • Your registration details have been successfully submitted. • Our team will review and verify your information. • Once verified, you will receive an email with further instructions on how to proceed.
-
-                Please note that it may take up to [X] business days for our team to complete this process. We appreciate your patience during this time.
-
-                If you have any questions or concerns, please don't hesitate to contact us at starinternational.
-
-                We look forward to welcoming you to our system once your account has been verified.
-
-
-                Best regards, StarInternational team
-                '''
+                body = f"""Dear {user_info}/n,Thank you for registering with our system. We have received your registration information and it has been sent for processing and verification.
+                        NB:  Your registration details have been successfully submitted. Our team will review and verify your information. Once verified, you will receive an email with further instructions on how to proceed.
+                        Please note that it may take up to a few business days for our team to complete this process. We appreciate your patience during this time.
+                        If you have any questions or concerns, please don't hesitate to contact us at star international.
+                        We look forward to welcoming you to our system once your account has been verified.
+                        Best regards, Star International team
+                        """
+               
                 sender_email =  os.environ.get("SENDER_EMAIL")
                 password = os.environ.get("SENDER_PASSWORD")  # sender email account password
                 smtp_server= os.environ.get("SMTP_SERVER")  # SMTP server of the email provider
