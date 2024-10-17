@@ -190,7 +190,7 @@ def process_user():
             return jsonify({"error": "No data received"}), 400
         
         # Generate a unique ID if not provided in the JSON
-        user_data['user_id'] = 1
+        # user_data['user_id'] = 1
         user_id = user_data['user_id']
 
         # if field is a file, store in file server and sned url to kafka instead
