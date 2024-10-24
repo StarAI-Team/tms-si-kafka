@@ -93,6 +93,7 @@ CREATE TABLE IF NOT EXISTS shipper_profile (
 -- Table: loads
 CREATE TABLE IF NOT EXISTS loads (
     user_id TEXT PRIMARY KEY,
+    load_id TEXT NOT NULL,
     load_name VARCHAR(255) NOT NULL,
     stars INTEGER,
     price DECIMAL(10, 2),
@@ -141,7 +142,7 @@ CREATE TABLE IF NOT EXISTS documents (
 -- Table: load_history
 CREATE TABLE IF NOT EXISTS load_history (
     user_id TEXT PRIMARY KEY,
-    load_id INTEGER REFERENCES loads(user_id),
+    load_id INTEGER REFERENCES loads(load_id),
     origin TEXT NOT NULL,
     destination TEXT NOT NULL,
     transport_date DATE NOT NULL,
