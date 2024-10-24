@@ -89,3 +89,61 @@ CREATE TABLE IF NOT EXISTS shipper_profile (
     password TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES shipper(user_id) ON DELETE CASCADE
 );
+
+-- Table: loads
+CREATE TABLE IF NOT EXISTS loads (
+    user_id TEXT PRIMARY KEY,
+    load_name VARCHAR(255) NOT NULL,
+    stars INTEGER,
+    price DECIMAL(10, 2),
+    route TEXT,
+    status VARCHAR(50),
+    perfect_match BOOLEAN,
+    private BOOLEAN,
+    transport_date DATE,
+    rate DECIMAL(10, 2),
+    quantity INTEGER,
+    load_type VARCHAR(50)
+);
+
+-- Table: booked_trucks
+CREATE TABLE IF NOT EXISTS booked_trucks (
+    user_id TEXT PRIMARY KEY,
+    truck_reg VARCHAR(20) UNIQUE NOT NULL,
+    truck_type VARCHAR(50),
+    trailer1_reg VARCHAR(20),
+    trailer2_reg VARCHAR(20),
+    driver_name VARCHAR(100) NOT NULL,
+    id_number VARCHAR(20) UNIQUE NOT NULL,
+    passport_number VARCHAR(20) UNIQUE NOT NULL,
+    license_number VARCHAR(100) UNIQUE NOT NULL,
+    phone_number VARCHAR(20) NOT NULL
+);
+
+-- Table: load_pool
+CREATE TABLE IF NOT EXISTS load_pool (
+    user_id TEXT PRIMARY KEY,
+    load_id TEXT NOT NULL,
+    route TEXT NOT NULL,
+    transport_date DATE NOT NULL,
+    rate DECIMAL(10, 2),
+    load_type VARCHAR(50)
+);
+
+-- Table: documents
+CREATE TABLE IF NOT EXISTS documents (
+    user_id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_url TEXT NOT NULL
+);
+
+-- Table: load_history
+CREATE TABLE IF NOT EXISTS load_history (
+    user_id TEXT PRIMARY KEY,
+    load_id INTEGER REFERENCES loads(user_id),
+    origin TEXT NOT NULL,
+    destination TEXT NOT NULL,
+    transport_date DATE NOT NULL,
+    status VARCHAR(50) NOT NULL
+);
