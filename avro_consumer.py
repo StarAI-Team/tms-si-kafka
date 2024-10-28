@@ -11,6 +11,7 @@ import utils
 import threading
 import logging_config
 from flask_wtf import CSRFProtect
+from notifications import send_email
 
 # Initialize PostgreSQL connection
 def create_connection():
@@ -259,9 +260,195 @@ def start_consumer():
                             conn.commit()
                             logging.info("shipper security details inserted")
 
-            
+                    if task_name == "Submission_Accepted":  
+                        company_name = decoded_message.get("company_name", "") 
+                        # user_id = decoded_message.get("user_id", "")
+                        
+
+                        def approve_registration_status(company_name):
+                            conn = create_connection()
+                            try:
+                                with conn:
+                                    with conn.cursor() as cur:
+                                        # Update transporter table if company_name exists
+                                        cur.execute("""
+                                            UPDATE transporter
+                                            SET registration_status = 'approved'
+                                            WHERE company_name = %s;
+                                        """, (company_name,))
+                                        
+                                        # Check if any rows were affected in transporter table
+                                        transporter_updated = cur.rowcount > 0
+
+                                        # Update shipper table if company_name exists
+                                        cur.execute("""
+                                            UPDATE shipper
+                                            SET registration_status = 'approved'
+                                            WHERE company_name = %s;
+                                        """, (company_name,))
+                                        
+                                        # Check if any rows were affected in shipper table
+                                        shipper_updated = cur.rowcount > 0
+
+                                        if transporter_updated or shipper_updated:
+                                            logging.info(f"Registration status updated to 'approved' for {company_name}.")
+                                        else:
+                                            logging.info(f"No updates made. Company '{company_name}' not found in either table.")
+                                            
+                            except Exception as e:
+                                logging.info(f"An error occurred: {e}")
+                            finally:
+                                conn.close()
+
+                        # Example usage
+                        approve_registration_status(company_name)
+                        
+                        logging.info(f"Company: {company_name} - status changed to [APPROVED]")
+    
+                        def get_company_email(company_name):
+                            conn = create_connection()
+                            company_email = None
+                            try:
+                                with conn:
+                                    with conn.cursor() as cur:
+                                        # Check transporter table for company_email
+                                        cur.execute("""
+                                            SELECT company_email FROM transporter
+                                            WHERE company_name = %s;
+                                        """, (company_name,))
+                                        result = cur.fetchone()
+                                        
+                                        if result:
+                                            company_email = result[0]
+                                        else:
+                                            # Check shipper table for company_email if not found in transporter
+                                            cur.execute("""
+                                                SELECT company_email FROM shipper
+                                                WHERE company_name = %s;
+                                            """, (company_name,))
+                                            result = cur.fetchone()
+                                            if result:
+                                                company_email = result[0]
+
+                                return company_email
+                            except Exception as e:
+                                print(f"An error occurred: {e}")
+                            finally:
+                                conn.close()
+
+                        # Example usage
+                        email = get_company_email(company_name)
+                        if email:
+                            logging.info(f"Company email found: {email}")
+                            sender_email =  os.environ.get("SENDER_EMAIL")
+                            receiver_email = email
+                            subject = "SIAI Account activation"
+                            body = f"Dear {company_name}\nKindly note that your registration has been approved.\n\nLogin with your registered crentials to acess your account. Thank you."
+                            password = os.environ.get("SENDER_PASSWORD")  # sender email account password
+                            smtp_server= os.environ.get("SMTP_SERVER")  # SMTP server of the email provider
+                            smtp_port = os.environ.get("SMTP_PORT")
+                            send_email(sender_email, receiver_email, subject, body, password, smtp_server, smtp_port)
+                            logging.info(f"Registration notification successfull")
+                        else:
+                            logging.info(f"Failed to send notification, No email found for {company_name}.")
+
+                    if task_name == "Submission_Rejected":  
+                        company_name = decoded_message.get("company_name", "") 
+                        rejection_reason = decoded_message.get("rejection_reason", "") 
+                        # user_id = decoded_message.get("user_id", "")
+                        
+
+                        def approve_registration_status(company_name, status):
+                            conn = create_connection()
+                            try:
+                                with conn:
+                                    with conn.cursor() as cur:
+                                        # Update transporter table if company_name exists
+                                        cur.execute("""
+                                            UPDATE transporter
+                                            SET registration_status = %s
+                                            WHERE company_name = %s;
+                                        """, (company_name, status))
+                                        
+                                        # Check if any rows were affected in transporter table
+                                        transporter_updated = cur.rowcount > 0
+
+                                        # Update shipper table if company_name exists
+                                        cur.execute("""
+                                            UPDATE shipper
+                                            SET registration_status = %s
+                                            WHERE company_name = %s;
+                                        """, (company_name, status))
+                                        
+                                        # Check if any rows were affected in shipper table
+                                        shipper_updated = cur.rowcount > 0
+
+                                        if transporter_updated or shipper_updated:
+                                            logging.info(f"Registration status updated to 'approved' for {company_name}.")
+                                        else:
+                                            logging.info(f"No updates made. Company '{company_name}' not found in either table.")
+                                            
+                            except Exception as e:
+                                logging.info(f"An error occurred: {e}")
+                            finally:
+                                conn.close()
+
+                        # Example usage
+                        approve_registration_status(company_name, "rejected")
+                        
+                        logging.info(f"Company: {company_name} - status changed to [REJECTED]")
+    
+                        def get_company_email(company_name):
+                            conn = create_connection()
+                            company_email = None
+                            try:
+                                with conn:
+                                    with conn.cursor() as cur:
+                                        # Check transporter table for company_email
+                                        cur.execute("""
+                                            SELECT company_email FROM transporter
+                                            WHERE company_name = %s;
+                                        """, (company_name,))
+                                        result = cur.fetchone()
+                                        
+                                        if result:
+                                            company_email = result[0]
+                                        else:
+                                            # Check shipper table for company_email if not found in transporter
+                                            cur.execute("""
+                                                SELECT company_email FROM shipper
+                                                WHERE company_name = %s;
+                                            """, (company_name,))
+                                            result = cur.fetchone()
+                                            if result:
+                                                company_email = result[0]
+
+                                return company_email
+                            except Exception as e:
+                                print(f"An error occurred: {e}")
+                            finally:
+                                conn.close()
+
+                        # Example usage
+                        email = get_company_email(company_name)
+                        if email:
+                            logging.info(f"Company email found: {email}")
+                            sender_email =  os.environ.get("SENDER_EMAIL")
+                            receiver_email = email
+                            subject = "SIAI Account activation"
+                            body = f"Dear {company_name}\nKindly note that your registration has been rejected with the following issues:\n\n{rejection_reason}.\nKindly fix the issues and resubmit. Thank you."
+                            password = os.environ.get("SENDER_PASSWORD")  # sender email account password
+                            smtp_server= os.environ.get("SMTP_SERVER")  # SMTP server of the email provider
+                            smtp_port = os.environ.get("SMTP_PORT")
+                            send_email(sender_email, receiver_email, subject, body, password, smtp_server, smtp_port)
+                            logging.info(f"Registration notification successfull")
+                        else:
+                            print("No email found for the specified company.")
+
                 else:
                     logging.warning("No valid task name received.")
+
+                
         except KeyboardInterrupt:
             pass
         finally:

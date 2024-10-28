@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS transporter (
     last_name TEXT NOT NULL,
     phone_number TEXT UNIQUE NOT NULL,  
     registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    registration_status TEXT DEFAULT 'pending'
+    registration_status TEXT DEFAULT 'pending',
+    rejection_reason TEXT DEFAULT 'None'
 );
 
 CREATE TABLE IF NOT EXISTS transporter_account_information (
@@ -61,7 +62,8 @@ CREATE TABLE IF NOT EXISTS shipper (
     company_location TEXT NOT NULL,
     company_email TEXT NOT NULL,
     registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-    registration_status TEXT DEFAULT 'pending'
+    registration_status TEXT DEFAULT 'pending',
+    rejection_reason TEXT DEFAULT 'None'
 );
 
 CREATE TABLE IF NOT EXISTS shipper_company_details (

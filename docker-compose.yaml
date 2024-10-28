@@ -131,7 +131,7 @@ services:
     env_file: .env
     networks:
       - postgres-network
-    depends_on:?????/
+    depends_on:
       - redpanda-0
     command: python avro_consumer.py
     # ports:
