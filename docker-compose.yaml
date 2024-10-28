@@ -144,7 +144,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@starinternational.com
+      - PGADMIN_DEFAULT_EMAIL=admin@siai.com
       - PGADMIN_DEFAULT_PASSWORD=admin
     networks:
       - postgres-network
@@ -157,6 +157,19 @@ services:
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_UPDATE: off
+    entrypoint: >
+      /bin/sh -c '
+        isAlive() { curl -sf http://127.0.0.1:9000/minio/health/live; }    # check if Minio is alive
+        minio $0 "$@" --quiet & echo $! > /tmp/minio.pid                   # start Minio in the background
+        while ! isAlive; do sleep 0.1; done                                # wait until Minio is alive
+        mc alias set minio http://127.0.0.1:9000 minioadmin minioadmin     # setup Minio client
+        mc mb minio/uploads || true                                        # create a test bucket
+        mc anonymous set public minio/uploads                              # make the test bucket public
+        kill -s INT $(cat /tmp/minio.pid) && rm /tmp/minio.pid             # stop Minio
+        while isAlive; do sleep 0.1; done                                  # wait until Minio is stopped
+        exec minio $0 "$@"                                                 # start Minio in the foreground
+      '
     networks:
       - postgres-network
     volumes:
@@ -165,6 +178,9 @@ services:
       - "9000:9000"
       - "9001:9001"
     command: server /data --console-address ":9001"
+   
+
+
 
 volumes:
   postgres_data:
