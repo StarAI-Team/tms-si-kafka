@@ -189,21 +189,17 @@ def process_user():
     try:
         # Receive JSON payload from request
         user_data = request.get_json()
-        logging.info(f"Received Data: {user_data}")
+        logging.info(f"test: {user_data}")
 
         if not user_data:
             return jsonify({"error": "No data received"}), 400
         
-         # Ensure 'user_id' exists and isn't inadvertently overwritten
-        if 'user_id' not in user_data or not user_data['user_id']:
-            return jsonify({"error": "Missing or invalid 'user_id'"}), 400
-            
-        #user_data['user_id'] = f"{user_data.get('company_name', 'default')}-{uuid4()}"
-        
+        # Generate a unique ID if not provided in the JSON
+        # user_data['user_id'] = 1
         user_id = user_data['user_id']
 
         # if field is a file, store in file server and sned url to kafka instead
-        logging.info(f"final user data: {user_data}")
+        logging.info(f"user data: {user_data}")
 
         # Produce message to Kafka
         try:
